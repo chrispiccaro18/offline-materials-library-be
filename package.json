@@ -23,7 +23,9 @@
     "next": "15.0.3"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
+    "@types/mongoose": "^5.11.96",
     "@types/node": "^20",
     "eslint": "^8",
     "eslint-config-next": "15.0.3",
