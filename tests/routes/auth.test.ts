@@ -29,7 +29,7 @@ jest
       if (typeof data !== 'string') {
         throw new Error('Only string passwords are supported in this mock');
       }
-      return data;
+      return `hashed-${data}`;
     }
   );
 
@@ -65,8 +65,7 @@ describe('POST /login', () => {
     const response = await request(app).post('/auth/login').send(testUserRaw);
 
     expect(response.status).toBe(200);
-    expect(response.body).toHaveProperty('accessToken');
-    expect(response.body.accessToken).toBe('mockedAccessToken');
+    expect(response.body).toHaveProperty('accessToken', 'mockedAccessToken');
   });
 
   it('return a 401 error for invalid credentials', async () => {
@@ -94,7 +93,7 @@ describe('POST /login', () => {
 
     const responseMissingPassword = await request(app)
       .post('/auth/login')
-      .send({ username: 'testuser' });
+      .send({ username: testUserRaw.username });
 
     expect(responseMissingPassword.status).toBe(400);
     expect(responseMissingPassword.body).toHaveProperty(
@@ -104,12 +103,33 @@ describe('POST /login', () => {
 
     const responseMissingUsername = await request(app)
       .post('/auth/login')
-      .send({ password: 'somepassword' });
+      .send({ password: testUserRaw.password });
 
     expect(responseMissingUsername.status).toBe(400);
     expect(responseMissingUsername.body).toHaveProperty(
       'message',
       'Username and password are required'
     );
+  });
+});
+
+describe('POST /register', () => {
+  it('should create a new user and return a success response with an access token', async () => {
+    const response = await request(app)
+      .post('/auth/register')
+      .send(testUserRaw);
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('accessToken', 'mockedAccessToken');
+
+    const cookies = response.headers['set-cookie'];
+    expect(cookies).toBeDefined();
+    expect(cookies[0]).toMatch(/refreshToken=.*; HttpOnly; SameSite=Strict/);
+
+    const newUser = await User.findOne({ username: testUserRaw.username });
+    expect(newUser).not.toBeNull();
+    expect(newUser?.email).toBe(testUserRaw.email);
+
+    expect(newUser?.password).not.toBe(testUserRaw.password);
   });
 });

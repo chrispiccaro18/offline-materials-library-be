@@ -55,7 +55,7 @@ describe('Password hashing', () => {
       username: secondTestUserRaw.username,
     });
 
-    // Ensure the hashes are different
+    // ensure the hashes are different
     expect(savedUser1?.password).not.toBe(savedUser2?.password);
   });
 });

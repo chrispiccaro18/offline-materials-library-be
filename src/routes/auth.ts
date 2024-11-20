@@ -23,7 +23,23 @@ router.post(
     const user: IUser = new User({ username, email, password });
     await user.save();
 
-    res.status(201).json({ message: 'User registered successfully' });
+    const payload = {
+      sub: user.id,
+    };
+
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      accessToken,
+    });
   })
 );
 
