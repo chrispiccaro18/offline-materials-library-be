@@ -16,14 +16,14 @@ afterAll(async () => {
   await db.disconnect();
 });
 
+const testUserRaw = {
+  email: 'testuser@test.com',
+  username: 'testuser',
+  password: 'testpassword'
+};
+
 describe('POST /login', () => {
   it('should return a valid token with correct credentials', async () => {
-    const testUserRaw = {
-      email: 'testuser@test.com',
-      username: 'testuser',
-      password: 'testpassword'
-    };
-    
     await User.create(testUserRaw);
 
     const response = await request(app)
@@ -34,4 +34,16 @@ describe('POST /login', () => {
     expect(response.body).toHaveProperty('accessToken');
     expect(response.body.accessToken).toBe('mockedAccessToken');
   });
+
+  it('should return a 401 error for invalid credentials', async () => {
+    await User.create(testUserRaw);
+  
+    const response = await request(app)
+      .post('/auth/login')
+      .send({ username: 'testuser', password: 'wrongpassword' });
+  
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('message', 'Invalid email or password');
+  });
+  
 });
