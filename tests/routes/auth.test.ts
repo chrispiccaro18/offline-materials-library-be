@@ -132,4 +132,67 @@ describe('POST /register', () => {
 
     expect(newUser?.password).not.toBe(testUserRaw.password);
   });
+
+  it('should return a 400 error if required fields are missing', async () => {
+    const responseNoFields = await request(app).post('/auth/register').send({});
+    expect(responseNoFields.status).toBe(400);
+    expect(responseNoFields.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+
+    const responseMissingEmailPassword = await request(app)
+      .post('/auth/register')
+      .send({ username: testUserRaw.username });
+    expect(responseMissingEmailPassword.status).toBe(400);
+    expect(responseMissingEmailPassword.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+
+    const responseMissingUsernamePassword = await request(app)
+      .post('/auth/register')
+      .send({ email: testUserRaw.email });
+    expect(responseMissingUsernamePassword.status).toBe(400);
+    expect(responseMissingUsernamePassword.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+
+    const responseMissingUsernameEmail = await request(app)
+      .post('/auth/register')
+      .send({ password: testUserRaw.password });
+    expect(responseMissingUsernameEmail.status).toBe(400);
+    expect(responseMissingUsernameEmail.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+
+    const responseMissingUsername = await request(app)
+      .post('/auth/register')
+      .send({ password: testUserRaw.password, email: testUserRaw.email });
+    expect(responseMissingUsername.status).toBe(400);
+    expect(responseMissingUsername.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+
+    const responseMissingEmail = await request(app)
+      .post('/auth/register')
+      .send({ username: testUserRaw.username, password: testUserRaw.password });
+    expect(responseMissingEmail.status).toBe(400);
+    expect(responseMissingEmail.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+
+    const responseMissingPassword = await request(app)
+      .post('/auth/register')
+      .send({ username: testUserRaw.username, email: testUserRaw.email });
+    expect(responseMissingPassword.status).toBe(400);
+    expect(responseMissingPassword.body).toHaveProperty(
+      'message',
+      'All fields are required'
+    );
+  });
 });

@@ -16,7 +16,12 @@ router.post(
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({ message: 'User already exists' });
+      res.status(409).json({ message: 'User already exists' });
+      return;
+    }
+
+    if (!username || !email || !password) {
+      res.status(400).json({ message: 'All fields are required' });
       return;
     }
 
