@@ -25,7 +25,8 @@ describe('Activity Schema', () => {
       title: 'Paper Airplane Contest',
       materials: ['paper', 'markers'],
       ageRange: 'Preschooler',
-      instructions: 'Fold paper into airplanes and see whose flies the farthest!',
+      instructions:
+        'Fold paper into airplanes and see whose flies the farthest!',
       tags: ['indoor', 'crafts'],
       estimatedTime: 15,
     });
@@ -46,7 +47,9 @@ describe('Activity Schema', () => {
     });
 
     // Use Jest's async error assertions
-    await expect(invalidActivity.save()).rejects.toThrow(mongoose.Error.ValidationError);
+    await expect(invalidActivity.save()).rejects.toThrow(
+      mongoose.Error.ValidationError
+    );
   });
 
   it('should enforce enum validation on ageRange', async () => {
@@ -58,6 +61,8 @@ describe('Activity Schema', () => {
       estimatedTime: 10,
     });
 
-    await expect(invalidActivity.save()).rejects.toThrow(mongoose.Error.ValidationError);
+    await expect(invalidActivity.save()).rejects.toThrow(
+      mongoose.Error.ValidationError
+    );
   });
 });

@@ -1,12 +1,31 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload as StandardJwtPayload } from 'jsonwebtoken';
 
-const JWT_SECRET: string = process.env.JWT_SECRET || '';
-const JWT_EXPIRATION = '1h'; // token expires in 1 hour
+const ACCESS_TOKEN_SECRET: string = process.env.ACCESS_TOKEN_SECRET || '';
+const REFRESH_SECRET: string = process.env.REFRESH_SECRET || '';
+const ACCESS_TOKEN_EXPIRATION = '15m';
+const REFRESH_TOKEN_EXPIRATION = '7d';
 
-export const generateToken = (userId: string): string => {
-    return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+export interface JwtPayload extends StandardJwtPayload {
+  sub: string;
+  role?: string;
+}
+
+export const generateAccessToken = (payload: JwtPayload): string => {
+  return jwt.sign(payload, ACCESS_TOKEN_SECRET, {
+    expiresIn: ACCESS_TOKEN_EXPIRATION,
+  });
 };
 
-export const verifyToken = (token: string): string | JwtPayload => {
-    return jwt.verify(token, JWT_SECRET);
+export const generateRefreshToken = (payload: JwtPayload): string => {
+  return jwt.sign(payload, REFRESH_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRATION,
+  });
+};
+
+export const verifyAccessToken = (token: string): JwtPayload => {
+  return jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+};
+
+export const verifyRefreshToken = (token: string): JwtPayload => {
+  return jwt.verify(token, REFRESH_SECRET) as JwtPayload;
 };

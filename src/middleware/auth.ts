@@ -1,19 +1,25 @@
-import { Request, Response, NextFunction } from 'express';
-import { verifyToken } from '@/utils/jwt';
+import { NextFunction, Request, Response } from 'express';
+import { verifyAccessToken } from '@/utils/jwt';
+import { asyncWrapper } from '@/utils/asyncWrapper';
 
-export const protectRoute = (req: Request, res: Response, next: NextFunction) => {
-  const token = req.headers.authorization?.split(' ')[1];
+export const protectRoute = asyncWrapper(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const authHeader = req.headers.authorization;
 
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized: No token provided' });
-  }
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      res.status(401).json({ message: 'Unauthorized: No token provided' });
+      return;
+    }
 
-  try {
-    const decoded = verifyToken(token);
-    req.user = decoded; // Attach decoded user to the request object
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      res.status(401).json({ message: 'Unauthorized: No token provided' });
+      return;
+    }
+
+    const decodedPayload = verifyAccessToken(token);
+    req.jwtPayload = decodedPayload; // Attach decoded userId to the request object
     next();
-  } catch (err) {
-    console.error('Authorization error:', err);
-    return res.status(401).json({ message: 'Unauthorized: Invalid token' });
   }
-};
+);

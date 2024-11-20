@@ -1,46 +1,86 @@
 import express, { Request, Response } from 'express';
-import User, {IUser } from '@/models/User';
+import User, { IUser } from '@/models/User';
 import { hashPassword, comparePassword } from '@/utils/auth';
-import { generateToken } from '@/utils/jwt'
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyRefreshToken,
+} from '@/utils/jwt';
 import { asyncWrapper } from '@/utils/asyncWrapper';
 
 const router = express.Router();
 
-router.post('/register', asyncWrapper(async (req: Request, res: Response): Promise<void> => {
+router.post(
+  '/register',
+  asyncWrapper(async (req: Request, res: Response): Promise<void> => {
     const { username, email, password } = req.body;
 
-        const existingUser = await User.findOne({ email });
-        if(existingUser) {
-            res.status(400).json({ message: 'User already exists'});
-            return;
-        }
-        const hashedPassword = await hashPassword(password);
-    
-        const user: IUser = new User({ username, email, password: hashedPassword });
-        await user.save();
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(400).json({ message: 'User already exists' });
+      return;
+    }
+    const hashedPassword = await hashPassword(password);
 
-        res.status(201).json({ message: 'User registered successfully' });
-    })
-);   
+    const user: IUser = new User({ username, email, password: hashedPassword });
+    await user.save();
 
-router.post('/login', asyncWrapper(async (req: Request, res: Response): Promise<void> => {
+    res.status(201).json({ message: 'User registered successfully' });
+  })
+);
+
+router.post(
+  '/login',
+  asyncWrapper(async (req: Request, res: Response): Promise<void> => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-        res.status(400).json({ message: "Invalid email or password" });
-        return;
+    if (!user || !(await comparePassword(password, user.password))) {
+      res.status(401).json({ message: 'Invalid email or password' });
+      return;
     }
 
-    const isMatch = await comparePassword(password, user.password);
-    if (!isMatch) {
-       res.status(400).json({ message: "Invalid email or password" });
-       return;
+    const payload = {
+      sub: user.id,
+    };
+
+    const accessToken = generateAccessToken(payload);
+    const refreshToken = generateRefreshToken(payload);
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+    });
+
+    res.status(200).json({ accessToken });
+  })
+);
+
+router.post(
+  '/refresh',
+  asyncWrapper(async (req: Request, res: Response): Promise<void> => {
+    const refreshToken = req.cookies.refreshToken;
+
+    if (!refreshToken) {
+      res.status(401).json({ message: 'No refresh token provided' });
+      return;
     }
 
-    const token = generateToken(user.id);
+    const decoded = verifyRefreshToken(refreshToken);
+    const newAccessToken = generateAccessToken(decoded);
 
-    res.status(200).json({ token });
-}))
+    res.status(200).json({ accessToken: newAccessToken });
+  })
+);
+
+router.post('/logout', (req: Request, res: Response) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  res.status(200).json({ message: 'Logged out successfully' });
+});
 
 export default router;

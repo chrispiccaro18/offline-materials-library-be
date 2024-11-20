@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import mongoose from 'mongoose';
 
 const MONGO_URI = process.env.MONGO_URI || '';

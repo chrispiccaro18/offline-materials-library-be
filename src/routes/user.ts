@@ -5,14 +5,18 @@ import { asyncWrapper } from '@/utils/asyncWrapper';
 
 const router = express.Router();
 
-router.get('/profile', protectRoute, asyncWrapper(async (req: Request, res: Response) => {
-  if (!req.user) {
-    res.status(401).json({ message: 'Unauthorized' });
-    return;
-  }
-    const user = await User.findById(req.user.id);
+router.get(
+  '/profile',
+  protectRoute,
+  asyncWrapper(async (req: Request, res: Response) => {
+    if (!req.jwtPayload) {
+      res.status(401).json({ message: 'Unauthorized' });
+      return;
+    }
+    const { sub: userId } = req.jwtPayload;
+    const user = await User.findById(userId);
     res.status(200).json({ user });
-})
+  })
 );
 
 export default router;

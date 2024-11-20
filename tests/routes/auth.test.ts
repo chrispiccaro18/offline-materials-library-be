@@ -8,10 +8,12 @@ app.use('/auth', authRoutes);
 
 describe('Auth Routes', () => {
   it('should register a user', async () => {
-    const response = await request(app)
-      .post('/auth/register')
-      .send({ username: 'testuser', email: 'test@example.com', password: 'password' });
-    
+    const response = await request(app).post('/auth/register').send({
+      username: 'testuser',
+      email: 'test@example.com',
+      password: 'password',
+    });
+
     expect(response.status).toBe(201);
     expect(response.body.message).toBe('User registered successfully');
   });

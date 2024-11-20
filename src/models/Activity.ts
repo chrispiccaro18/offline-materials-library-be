@@ -4,7 +4,12 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 export interface IActivity extends Document {
   title: string; // Name of the activity
   materials: string[]; // List of materials needed
-  ageRange: 'Infant' | 'Toddler' | 'Preschooler' | 'Kindergarten' | 'School Age'; // Age group
+  ageRange:
+    | 'Infant'
+    | 'Toddler'
+    | 'Preschooler'
+    | 'Kindergarten'
+    | 'School Age'; // Age group
   instructions: string; // Detailed activity instructions
   tags?: string[]; // Optional tags for categorization
   estimatedTime: number; // Estimated time in minutes
@@ -46,7 +51,8 @@ const ActivitySchema: Schema<IActivity> = new Schema({
 
 // Define the Mongoose model with the interface
 const Activity: Model<IActivity> =
-  mongoose.models.Activity || mongoose.model<IActivity>('Activity', ActivitySchema);
+  mongoose.models.Activity ||
+  mongoose.model<IActivity>('Activity', ActivitySchema);
 
 export default Activity;
 
