@@ -30,10 +30,21 @@ router.post(
 router.post(
   '/login',
   asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-    const { email } = req.body;
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({ message: 'Username and password are required' });
+      return;
+    }
 
     const user = await User.findOne({ email });
     if (!user) {
+      res.status(401).json({ message: 'Invalid email or password' });
+      return;
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
       res.status(401).json({ message: 'Invalid email or password' });
       return;
     }

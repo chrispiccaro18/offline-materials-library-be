@@ -1,22 +1,5 @@
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import bcrypt from 'bcrypt';
-import { generateAccessToken, generateRefreshToken } from '@/utils/jwt';
-
-jest.spyOn(bcrypt, 'hash').mockImplementation(async (data: string | Buffer, _saltOrRounds: string | number) => {
-  if (typeof data !== 'string') {
-    throw new Error('Only string passwords are supported in this mock');
-  }
-  return `hashed-${data}`;
-});
-
-(generateAccessToken as jest.Mock).mockImplementation(() => 'mockedAccessToken');
-(generateRefreshToken as jest.Mock).mockImplementation(() => 'mockedRefreshToken');
-
-jest.mock('@/utils/jwt', () => ({
-  generateAccessToken: jest.fn(),
-  generateRefreshToken: jest.fn(),
-}));
 
 let mongoServer: MongoMemoryServer;
 
