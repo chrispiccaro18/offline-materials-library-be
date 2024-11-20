@@ -7,6 +7,7 @@ const config: Config = {
   testEnvironment: 'node',
   roots: ['<rootDir>/tests', '<rootDir>/src'],
   moduleFileExtensions: ['ts', 'js', 'json'],
+  setupFilesAfterEnv: ['./tests/test-db-setup.ts'],
   testRegex: '.*\\.test\\.ts$',
   transform: {
     '^.+\\.ts$': 'ts-jest',

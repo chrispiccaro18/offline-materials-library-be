@@ -1,6 +1,5 @@
 import express, { Request, Response } from 'express';
 import User, { IUser } from '@/models/User';
-import { hashPassword, comparePassword } from '@/utils/auth';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -20,9 +19,8 @@ router.post(
       res.status(400).json({ message: 'User already exists' });
       return;
     }
-    const hashedPassword = await hashPassword(password);
 
-    const user: IUser = new User({ username, email, password: hashedPassword });
+    const user: IUser = new User({ username, email, password });
     await user.save();
 
     res.status(201).json({ message: 'User registered successfully' });
@@ -32,10 +30,10 @@ router.post(
 router.post(
   '/login',
   asyncWrapper(async (req: Request, res: Response): Promise<void> => {
-    const { email, password } = req.body;
+    const { email } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user || !(await comparePassword(password, user.password))) {
+    if (!user) {
       res.status(401).json({ message: 'Invalid email or password' });
       return;
     }

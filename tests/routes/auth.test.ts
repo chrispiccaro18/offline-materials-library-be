@@ -1,20 +1,37 @@
 import request from 'supertest';
-import express from 'express';
-import authRoutes from '@/routes/auth';
+import User from '@/models/User';
+import db from '../test-db-setup';
+import app from '@/app';
 
-const app = express();
-app.use(express.json());
-app.use('/auth', authRoutes);
+beforeAll(async () => {
+  await db.connect();
+});
 
-describe('Auth Routes', () => {
-  it('should register a user', async () => {
-    const response = await request(app).post('/auth/register').send({
+afterEach(async () => {
+  jest.clearAllMocks();
+  await db.clearDatabase();
+});
+
+afterAll(async () => {
+  await db.disconnect();
+});
+
+describe('POST /login', () => {
+  it('should return a valid token with correct credentials', async () => {
+    const testUserRaw = {
+      email: 'testuser@test.com',
       username: 'testuser',
-      email: 'test@example.com',
-      password: 'password',
-    });
+      password: 'testpassword'
+    };
+    
+    await User.create(testUserRaw);
 
-    expect(response.status).toBe(201);
-    expect(response.body.message).toBe('User registered successfully');
+    const response = await request(app)
+      .post('/auth/login')
+      .send(testUserRaw);
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('accessToken');
+    expect(response.body.accessToken).toBe('mockedAccessToken');
   });
 });
