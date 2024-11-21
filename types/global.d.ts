@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-import { JwtPayload } from 'jsonwebtoken';
 
 declare global {
   namespace NodeJS {
@@ -8,14 +7,6 @@ declare global {
         conn: mongoose.Connection | null;
         promise: Promise<mongoose.Connection> | null;
       };
-    }
-  }
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      jwtPayload?: JwtPayload;
     }
   }
 }
