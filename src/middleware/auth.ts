@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { verifyAccessToken } from '@/utils/jwt';
 import { asyncWrapper } from '@/utils/asyncWrapper';
 
+// TODO: make sure that accessToken matches the user
 export const protectRoute = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
