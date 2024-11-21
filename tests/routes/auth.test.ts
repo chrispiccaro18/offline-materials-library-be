@@ -199,13 +199,11 @@ describe('POST /register', () => {
   it('should return a 409 error if the username is already taken', async () => {
     await User.create(testUserRaw);
 
-    const response = await request(app)
-      .post('/auth/register')
-      .send({
-        username: testUserRaw.username,
-        email: 'newemail@example.com',
-        password: 'anotherPassword123',
-      });
+    const response = await request(app).post('/auth/register').send({
+      username: testUserRaw.username,
+      email: 'newemail@example.com',
+      password: 'anotherPassword123',
+    });
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message', 'Username already taken');
@@ -214,15 +212,32 @@ describe('POST /register', () => {
   it('should return a 409 error if the email is already taken', async () => {
     await User.create(testUserRaw);
 
-    const response = await request(app)
-      .post('/auth/register')
-      .send({
-        username: 'newUser',
-        email: testUserRaw.email,
-        password: 'anotherPassword123',
-      });
+    const response = await request(app).post('/auth/register').send({
+      username: 'newUser',
+      email: testUserRaw.email,
+      password: 'anotherPassword123',
+    });
 
     expect(response.status).toBe(409);
     expect(response.body).toHaveProperty('message', 'Email already taken');
+  });
+
+  it('should hash the password before storing it', async () => {
+    const response = await request(app)
+      .post('/auth/register')
+      .send(testUserRaw);
+
+    expect(response.status).toBe(201);
+
+    expect(bcrypt.hash).toHaveBeenCalledWith(
+      testUserRaw.password,
+      expect.any(String)
+    );
+
+    const storedUser = await User.findOne({ email: testUserRaw.email });
+    expect(storedUser).toBeTruthy();
+    expect(storedUser?.password).toBe(`hashed-${testUserRaw.password}`);
+
+    expect(storedUser?.password).not.toBe(testUserRaw.password);
   });
 });

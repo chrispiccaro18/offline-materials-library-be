@@ -18,7 +18,14 @@ router.post(
       $or: [{ email }, { username }],
     });
     if (existingUser) {
-      res.status(409).json({ message: existingUser.email === email ? 'Email already taken' : 'Username already taken', });
+      res
+        .status(409)
+        .json({
+          message:
+            existingUser.email === email
+              ? 'Email already taken'
+              : 'Username already taken',
+        });
       return;
     }
 
