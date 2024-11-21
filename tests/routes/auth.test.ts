@@ -195,4 +195,34 @@ describe('POST /register', () => {
       'All fields are required'
     );
   });
+
+  it('should return a 409 error if the username is already taken', async () => {
+    await User.create(testUserRaw);
+
+    const response = await request(app)
+      .post('/auth/register')
+      .send({
+        username: testUserRaw.username,
+        email: 'newemail@example.com',
+        password: 'anotherPassword123',
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message', 'Username already taken');
+  });
+
+  it('should return a 409 error if the email is already taken', async () => {
+    await User.create(testUserRaw);
+
+    const response = await request(app)
+      .post('/auth/register')
+      .send({
+        username: 'newUser',
+        email: testUserRaw.email,
+        password: 'anotherPassword123',
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toHaveProperty('message', 'Email already taken');
+  });
 });

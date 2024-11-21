@@ -14,9 +14,11 @@ router.post(
   asyncWrapper(async (req: Request, res: Response): Promise<void> => {
     const { username, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }],
+    });
     if (existingUser) {
-      res.status(409).json({ message: 'User already exists' });
+      res.status(409).json({ message: existingUser.email === email ? 'Email already taken' : 'Username already taken', });
       return;
     }
 
